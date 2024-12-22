@@ -7,7 +7,7 @@ import (
 
 func main() {
 	// Crear UI
-	rows := 501
+	rows := 500
 	myUI := ui.NewUI(rows)
 
 	// Crear aplicación
