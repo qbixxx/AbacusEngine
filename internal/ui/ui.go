@@ -41,6 +41,10 @@ func NewMemoryTable(rows int) *MemoryTable {
 	return memoryTable
 }
 
+func (m *MemoryTable) GetSize() int {
+	return m.rows
+}
+
 // initTable configura la tabla con encabezados, filas iniciales y comportamiento.
 func (m *MemoryTable) initTable() {
 	m.table.SetBorders(true).
@@ -137,6 +141,20 @@ func (m *MemoryTable) handleInput(event *tcell.EventKey) *tcell.EventKey {
 	return event
 }
 
+func (m *MemoryTable) GetInstruction(row int) string {
+	cell := m.table.GetCell(row+1, 1) // +1 para ignorar el encabezado
+	if cell == nil {
+		return "NOP"
+	}
+	return cell.Text
+}
+func (m *MemoryTable) ResetTable() {
+	for row := 1; row <= m.rows; row++ {
+		m.table.GetCell(row, 1).SetText("NOP")
+		m.table.GetCell(row, 2).SetText("")
+	}
+}
+
 // handleSelectionChange maneja el evento de cambio de selección.
 func (m *MemoryTable) handleSelectionChange(newRow, newCol int) {
 	if m.prevCol == 1 {
@@ -157,6 +175,12 @@ func (m *MemoryTable) GetTable() *tview.Table {
 
 // UI encapsula la estructura gráfica del programa.
 type UI struct {
+	Pages *tview.Pages
+	MainPage MainPage
+	//inputField *tview.TextView
+}
+
+type MainPage struct {
 	RootGrid  		*tview.Grid
 	Table 			*MemoryTable
 	MenuGrid		*tview.Grid
@@ -165,54 +189,90 @@ type UI struct {
 	InfoInterpreter	*tview.TextView
 }
 
-// NewUI crea una nueva interfaz de usuario con una tabla y un widget lateral.
+
 func NewUI(rows int) *UI {
 	
-	ui := &UI{}
-	
-	ui.Table = NewMemoryTable(rows)
-	ui.Title = tview.NewTextView().
-		SetDynamicColors(true).
-		SetTextAlign(tview.AlignCenter).
-		SetText(asciiTitle)
+	pages := tview.NewPages()
 
-	ui.Title.//.SetBorder(true).
-		//SetTitle("Title").
-		SetTitleAlign(tview.AlignCenter)
-	
-		ui.InfoState = tview.NewTextView().
-		SetDynamicColors(true).
-		SetTextAlign(tview.AlignLeft)
+	ui := &UI{
+		Pages: pages,
+	}
 
-	ui.InfoInterpreter = tview.NewTextView().
-		SetDynamicColors(true).
-		SetTextAlign(tview.AlignLeft)
+	// Inicializar MainPage
+	mainPage := &MainPage{
+		Table:          NewMemoryTable(rows),
+		Title:          tview.NewTextView().SetDynamicColors(true).SetTextAlign(tview.AlignCenter).SetText(asciiTitle),
+		InfoState:      tview.NewTextView().SetDynamicColors(true).SetTextAlign(tview.AlignLeft),
+		InfoInterpreter: tview.NewTextView().SetDynamicColors(true).SetTextAlign(tview.AlignLeft),
+	}
 
+	// Configurar MenuGrid
+	mainPage.MenuGrid = tview.NewGrid().
+		SetRows(16, 1, -1).
+		AddItem(mainPage.Title, 0, 0, 1, 1, 0, 0, false).
+		AddItem(mainPage.InfoState, 1, 0, 1, 1, 0, 0, true).
+		AddItem(mainPage.InfoInterpreter, 2, 0, 1, 1, 0, 0, true)
 
-	ui.MenuGrid = tview.NewGrid().
-			SetRows(16,1, -1).
-			//SetColumns(0).
-			AddItem(ui.Title, 0, 0, 1, 1, 0, 0, false).
-			AddItem(ui.InfoState, 1, 0, 1, 1, 0, 0, true).
-			AddItem(ui.InfoInterpreter, 2, 0, 1, 1, 0, 0, true)
-
-	ui.UpdateInterpreterInfo("null")
-
-	ui.RootGrid = tview.NewGrid().
+	// Configurar RootGrid
+	mainPage.RootGrid = tview.NewGrid().
 		SetRows(0).
 		SetColumns(0, 48).
-		AddItem(ui.Table.GetTable(), 0, 0, 1, 1, 0, 0, true).
-		AddItem(ui.MenuGrid, 0, 1, 1, 1, 0, 0, false)
+		AddItem(mainPage.Table.GetTable(), 0, 0, 1, 1, 0, 0, true).
+		AddItem(mainPage.MenuGrid, 0, 1, 1, 1, 0, 0, false)
+
+	// Asignar MainPage a UI
+	ui.MainPage = *mainPage
+
+	var inputField *tview.InputField
+	var initAddress string
+
+	// Configurar el campo de entrada
+	inputField = tview.NewInputField().
+		SetLabel("Enter initAddress: ").
+		SetFieldWidth(20).
+		SetDoneFunc(func(key tcell.Key) {
+			if key == tcell.KeyEnter {
+				// Recuperar el valor ingresado
+				initAddress = inputField.GetText()
+				fmt.Printf("Init Address: %s\n", initAddress)
+				//ui.MainPage.MenuGrid.initAddress = initAddress
+				// Actualizar la información del intérprete
+				ui.UpdateInterpreterInfo(initAddress)
+
+				// Volver a la página principal
+				pages.SwitchToPage("main")
+				
+			}
+		})
+
+	// Crear un modal para el campo de entrada
+	modal := tview.NewFlex().
+		SetDirection(tview.FlexRow).
+		AddItem(inputField, 3, 1, true)
+
+	// Agregar el modal como una nueva página
+	pages.AddPage("input", modal, true, false)
+	// Agregar páginas a `ui.pages`
+	ui.Pages.AddPage("main", mainPage.RootGrid, true, true)
+	ui.Pages.AddPage("input", tview.NewFlex().SetDirection(tview.FlexRow).AddItem(inputField, 3, 1, true), true, false)
 
 	return ui
 }
 
-// UpdateStateTitle actualiza la sección Title con el estado actual.
-func (ui *UI) UpdateInterpreterInfo(info string) {
-	ui.InfoInterpreter.SetText(fmt.Sprintf("[red]Loading point address: %s", info))
+
+
+func (ui *UI) SwitchToPage(page string){
+	ui.Pages.SwitchToPage(page)
+
+}
+// UpdateStateTitle actualiza la sección State con el estado actual.
+func (ui *UI) UpdateStateInfo(state string) {
+	
+	//_, MainPage := ui.pages.GetFrontPage()
+	ui.MainPage.InfoState.SetText(fmt.Sprintf("[green]Mode: %s", state))
 }
 
-// UpdateStateTitle actualiza la sección Title con el estado actual.
-func (ui *UI) UpdateStateInfo(state string) {
-	ui.InfoState.SetText(fmt.Sprintf("[green]Mode: %s", state))
+// UpdateStateTitle actualiza la sección Interpreter Info con el estado actual del interprete.
+func (ui *UI) UpdateInterpreterInfo(info string) {
+	ui.MainPage.InfoInterpreter.SetText(fmt.Sprintf("[red]%s", info))
 }

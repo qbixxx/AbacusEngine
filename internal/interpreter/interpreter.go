@@ -1,70 +1,55 @@
-
 package interpreter
 
-import (
-	"abacus_engine/internal/memory"
-	"fmt"
-)
+import "abacus_engine/internal/ui"
 
+// Interpreter representa al intérprete que lee directamente desde la tabla de memoria.
 type Interpreter struct {
-	Memory      *memory.Memory
-	Accumulator int
-	LoadAddress int
-	Running     bool
+	memoryTable       	*ui.MemoryTable
+	initAddress			int
+	instructionPointer 	int
+	accumulator       	int
 }
 
-func NewInterpreter(memory *memory.Memory) *Interpreter {
+// NewInterpreter crea una nueva instancia del intérprete conectado a la MemoryTable.
+func NewInterpreter(memoryTable *ui.MemoryTable) *Interpreter {
 	return &Interpreter{
-		Memory:      memory,
-		Accumulator: 0,
-		LoadAddress: -1,
-		Running:     false,
+		memoryTable:       	memoryTable,
+		initAddress:		-1,
+		instructionPointer: 0,
+		accumulator:       	0,
 	}
 }
 
-func (i *Interpreter) SetLoadAddress(address int) error {
-	if address < 0 || address >= i.Memory.Size {
-		return fmt.Errorf("Dirección inválida")
-	}
-	i.LoadAddress = address
-	return nil
+func (i *Interpreter) IsRunnable() bool {
+	return i.memoryTable.GetSize() > i.initAddress && i.initAddress >= 0
 }
 
-func (i *Interpreter) Step() error {
-	if i.LoadAddress == -1 {
-		return fmt.Errorf("Dirección de carga no inicializada")
+func (i *Interpreter) SetInitAddress(address int) {
+	i.initAddress = address
+}
+// Step ejecuta la instrucción en la posición actual del puntero.
+func (i *Interpreter) Step() {
+	instruction := i.memoryTable.GetInstruction(i.instructionPointer)
+	switch instruction {
+	case "NOP":
+		// No hacer nada
+	case "INC":
+		i.accumulator++
+	case "DEC":
+		i.accumulator--
+	// Más instrucciones según sea necesario
 	}
-	opcode, data := i.Memory.ReadInstruction(i.LoadAddress)
-	switch opcode {
-	case 0x0: // Cargar inmediato
-		i.Accumulator = data
-	case 0x1: // Cargar de memoria
-		i.Accumulator = i.Memory.Read(data)
-	case 0x2: // Almacenar en memoria
-		i.Memory.Write(data, i.Accumulator)
-	case 0x3: // Sumar al acumulador
-		i.Accumulator += data
-	case 0x5: // Saltar si AC == 0
-		if i.Accumulator == 0 {
-			i.LoadAddress = data
-			return nil
-		}
-	case 0xF: // Fin del programa
-		i.Running = false
-		return nil
-	default:
-		return fmt.Errorf("Opcode desconocido: %x", opcode)
-	}
-	i.LoadAddress++
-	return nil
+	i.instructionPointer++
 }
 
-func (i *Interpreter) Run() {
-	i.Running = true
-	for i.Running {
-		if err := i.Step(); err != nil {
-			fmt.Println("Error: ", err)
-			i.Running = false
-		}
-	}
+// Reset reinicia el estado del intérprete.
+func (i *Interpreter) Reset() {
+	i.instructionPointer = 0
+	i.accumulator = 0
+	i.memoryTable.ResetTable()
+}
+
+// GetState devuelve el estado actual del intérprete.
+func (i *Interpreter) GetState() (int, int, int, bool) {
+	return i.instructionPointer, i.accumulator, i.initAddress, i.IsRunnable()
 }
