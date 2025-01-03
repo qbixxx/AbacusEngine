@@ -41,6 +41,9 @@ func (i *Interpreter) Step() {
 		// Más instrucciones según sea necesario
 	}
 	i.instructionPointer++
+
+	i.memoryTable.ScrollToCurrentRow(i.instructionPointer)
+
 }
 
 func (i *Interpreter) SetForDebug() {
