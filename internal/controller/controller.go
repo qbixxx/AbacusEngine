@@ -32,7 +32,7 @@ func NewAppController(rows int) *AppController {
 
 		// Actualizar la información del intérprete en la UI
 		rip, ac, init, enabled := interpreter.GetState()
-		ui.UpdateInterpreterInfo(fmt.Sprintf("RIP: %03X\nAccumulator: %d\nInit Address: %d\nEnabled: %v", rip, ac, init, enabled))
+		ui.UpdateInterpreterInfo(rip, ac, init, enabled)
 
 	})
 
@@ -117,7 +117,5 @@ func (ac *AppController) setInitAddress() {
 // updateInterpreterInfo actualiza la sección de información del intérprete en la UI.
 func (ac *AppController) updateInterpreterInfo() {
 	instructionPointer, accumulator, initAddress, runnable := ac.interpreter.GetState()
-	ac.ui.UpdateInterpreterInfo(
-		fmt.Sprintf("RIP: %03X\nAccumulator: %d\nInit Address: %d\nEnabled: %v", instructionPointer, accumulator, initAddress, runnable),
-	)
+	ac.ui.UpdateInterpreterInfo(instructionPointer, accumulator, initAddress, runnable)
 }

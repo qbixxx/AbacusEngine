@@ -306,7 +306,19 @@ func (ui *UI) UpdateStateInfo(state string) {
 }
 
 // UpdateStateTitle actualiza la sección Interpreter Info con el estado actual del interprete.
-func (ui *UI) UpdateInterpreterInfo(info string) {
+func (ui *UI) UpdateInterpreterInfo(rip , acc, initAdr int, runnable bool) {
 
-	ui.MainPage.InfoInterpreter.SetText(fmt.Sprintf("[red]%s", info))
+	var colorEnable string
+
+	if runnable{
+		colorEnable = "[green]"
+	}else{
+		colorEnable = "[red]"
+	}
+
+
+	//ui.MainPage.InfoInterpreter.SetText(fmt.Sprintf("[red]%s", info))
+	
+	ui.MainPage.InfoInterpreter.SetText(fmt.Sprintf("RIP: %03X\nAccumulator: %d\nInit Address: "+colorEnable+"%d\n"+"[white]Enabled: "+colorEnable+"%v", rip, acc, initAdr, runnable))
+
 }
