@@ -4,19 +4,19 @@ import "abacus_engine/internal/ui"
 
 // Interpreter representa al intérprete que lee directamente desde la tabla de memoria.
 type Interpreter struct {
-	memoryTable       	*ui.MemoryTable
-	initAddress			int
-	instructionPointer 	int
-	accumulator       	int
+	memoryTable        *ui.MemoryTable
+	initAddress        int
+	instructionPointer int
+	accumulator        int
 }
 
 // NewInterpreter crea una nueva instancia del intérprete conectado a la MemoryTable.
 func NewInterpreter(memoryTable *ui.MemoryTable) *Interpreter {
 	return &Interpreter{
-		memoryTable:       	memoryTable,
-		initAddress:		-1,
-		instructionPointer: 0,
-		accumulator:       	0,
+		memoryTable:        memoryTable,
+		initAddress:        -1,
+		instructionPointer: -1,
+		accumulator:        0,
 	}
 }
 
@@ -27,6 +27,7 @@ func (i *Interpreter) IsRunnable() bool {
 func (i *Interpreter) SetInitAddress(address int) {
 	i.initAddress = address
 }
+
 // Step ejecuta la instrucción en la posición actual del puntero.
 func (i *Interpreter) Step() {
 	instruction := i.memoryTable.GetInstruction(i.instructionPointer)
@@ -37,15 +38,23 @@ func (i *Interpreter) Step() {
 		i.accumulator++
 	case "DEC":
 		i.accumulator--
-	// Más instrucciones según sea necesario
+		// Más instrucciones según sea necesario
 	}
 	i.instructionPointer++
 }
 
+func (i *Interpreter) SetForDebug() {
+	if i.IsRunnable(){
+		i.instructionPointer = i.initAddress
+		i.memoryTable.Goto(i.instructionPointer, 1)
+	}
+}
+
 // Reset reinicia el estado del intérprete.
 func (i *Interpreter) Reset() {
-	i.instructionPointer = 0
+	i.instructionPointer = -1
 	i.accumulator = 0
+	i.initAddress = -1
 	i.memoryTable.ResetTable()
 }
 

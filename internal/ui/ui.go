@@ -141,6 +141,11 @@ func (m *MemoryTable) handleInput(event *tcell.EventKey) *tcell.EventKey {
 	return event
 }
 
+func (m *MemoryTable) Goto(row int, column int)  {
+	m.table.Select(row+1, column)
+}
+
+
 func (m *MemoryTable) GetInstruction(row int) string {
 	cell := m.table.GetCell(row+1, 1) // +1 para ignorar el encabezado
 	if cell == nil {
@@ -175,23 +180,28 @@ func (m *MemoryTable) GetTable() *tview.Table {
 
 // UI encapsula la estructura gráfica del programa.
 type UI struct {
-	Pages *tview.Pages
-	MainPage MainPage
+	Pages         *tview.Pages
+	MainPage      MainPage
+	onInitAddress func(string) // Callback para manejar el initAddress
 	//inputField *tview.TextView
 }
 
-type MainPage struct {
-	RootGrid  		*tview.Grid
-	Table 			*MemoryTable
-	MenuGrid		*tview.Grid
-	Title	  		*tview.TextView
-	InfoState		*tview.TextView
-	InfoInterpreter	*tview.TextView
+// SetInitAddressCallback configura la función callback.
+func (ui *UI) SetInitAddressCallback(callback func(string)) {
+	ui.onInitAddress = callback
 }
 
+type MainPage struct {
+	RootGrid        *tview.Grid
+	Table           *MemoryTable
+	MenuGrid        *tview.Grid
+	Title           *tview.TextView
+	InfoState       *tview.TextView
+	InfoInterpreter *tview.TextView
+}
 
 func NewUI(rows int) *UI {
-	
+
 	pages := tview.NewPages()
 
 	ui := &UI{
@@ -200,9 +210,9 @@ func NewUI(rows int) *UI {
 
 	// Inicializar MainPage
 	mainPage := &MainPage{
-		Table:          NewMemoryTable(rows),
-		Title:          tview.NewTextView().SetDynamicColors(true).SetTextAlign(tview.AlignCenter).SetText(asciiTitle),
-		InfoState:      tview.NewTextView().SetDynamicColors(true).SetTextAlign(tview.AlignLeft),
+		Table:           NewMemoryTable(rows),
+		Title:           tview.NewTextView().SetDynamicColors(true).SetTextAlign(tview.AlignCenter).SetText(asciiTitle),
+		InfoState:       tview.NewTextView().SetDynamicColors(true).SetTextAlign(tview.AlignLeft),
 		InfoInterpreter: tview.NewTextView().SetDynamicColors(true).SetTextAlign(tview.AlignLeft),
 	}
 
@@ -234,14 +244,16 @@ func NewUI(rows int) *UI {
 			if key == tcell.KeyEnter {
 				// Recuperar el valor ingresado
 				initAddress = inputField.GetText()
-				fmt.Printf("Init Address: %s\n", initAddress)
+				//fmt.Printf("Init Address: %s\n", initAddress)
 				//ui.MainPage.MenuGrid.initAddress = initAddress
 				// Actualizar la información del intérprete
-				ui.UpdateInterpreterInfo(initAddress)
-
+				//ui.UpdateInterpreterInfo(initAddress)
+				if ui.onInitAddress != nil {
+					ui.onInitAddress(initAddress)
+				}
 				// Volver a la página principal
 				pages.SwitchToPage("main")
-				
+
 			}
 		})
 
@@ -259,15 +271,14 @@ func NewUI(rows int) *UI {
 	return ui
 }
 
-
-
-func (ui *UI) SwitchToPage(page string){
+func (ui *UI) SwitchToPage(page string) {
 	ui.Pages.SwitchToPage(page)
 
 }
+
 // UpdateStateTitle actualiza la sección State con el estado actual.
 func (ui *UI) UpdateStateInfo(state string) {
-	
+
 	//_, MainPage := ui.pages.GetFrontPage()
 	ui.MainPage.InfoState.SetText(fmt.Sprintf("[green]Mode: %s", state))
 }
