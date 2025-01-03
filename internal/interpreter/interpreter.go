@@ -47,6 +47,7 @@ func (i *Interpreter) SetForDebug() {
 	if i.IsRunnable(){
 		i.instructionPointer = i.initAddress
 		i.memoryTable.Goto(i.instructionPointer, 1)
+		i.accumulator = 0
 	}
 }
 

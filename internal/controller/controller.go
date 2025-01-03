@@ -91,10 +91,13 @@ func (ac *AppController) HandleKeyEvent(event *tcell.EventKey) *tcell.EventKey {
 			ac.interpreter.Step()
 			ac.updateInterpreterInfo()
 		}
+		if ac.stateManager.GetCurrentState() == state.Edit {
+			
+		}
 
 	// Ignorar otras teclas en modos específicos
 	default:
-		if ac.stateManager.GetCurrentState() == state.Run {
+		if ac.stateManager.GetCurrentState() == state.Debug {
 			// No permitir interacciones adicionales en modo Run
 			return nil
 		}

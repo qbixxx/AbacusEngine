@@ -244,6 +244,9 @@ func NewUI(rows int) *UI {
 			if key == tcell.KeyEnter {
 				// Recuperar el valor ingresado
 				initAddress = inputField.GetText()
+				if initAddress == ""{
+					initAddress = "-1"
+				}
 				//fmt.Printf("Init Address: %s\n", initAddress)
 				//ui.MainPage.MenuGrid.initAddress = initAddress
 				// Actualizar la información del intérprete
