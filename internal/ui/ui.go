@@ -141,10 +141,9 @@ func (m *MemoryTable) handleInput(event *tcell.EventKey) *tcell.EventKey {
 	return event
 }
 
-func (m *MemoryTable) Goto(row int, column int)  {
+func (m *MemoryTable) Goto(row int, column int) {
 	m.table.Select(row+1, column)
 }
-
 
 func (m *MemoryTable) GetInstruction(row int) string {
 	cell := m.table.GetCell(row+1, 1) // +1 para ignorar el encabezado
@@ -244,7 +243,7 @@ func NewUI(rows int) *UI {
 			if key == tcell.KeyEnter {
 				// Recuperar el valor ingresado
 				initAddress = inputField.GetText()
-				if initAddress == ""{
+				if initAddress == "" {
 					initAddress = "-1"
 				}
 				//fmt.Printf("Init Address: %s\n", initAddress)
@@ -282,11 +281,22 @@ func (ui *UI) SwitchToPage(page string) {
 // UpdateStateTitle actualiza la sección State con el estado actual.
 func (ui *UI) UpdateStateInfo(state string) {
 
-	//_, MainPage := ui.pages.GetFrontPage()
-	ui.MainPage.InfoState.SetText(fmt.Sprintf("[green]Mode: %s", state))
+	var color string
+	switch state {
+
+	case "Edit":
+		color = "[yellow]"
+	case "Debug":
+		color = "[turquoise]"
+	case "Run":
+		color = "[white]"
+	}
+
+	ui.MainPage.InfoState.SetText(fmt.Sprintf("[green]Mode: "+color+"%s", state))
 }
 
 // UpdateStateTitle actualiza la sección Interpreter Info con el estado actual del interprete.
 func (ui *UI) UpdateInterpreterInfo(info string) {
+
 	ui.MainPage.InfoInterpreter.SetText(fmt.Sprintf("[red]%s", info))
 }

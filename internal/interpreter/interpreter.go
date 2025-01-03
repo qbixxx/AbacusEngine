@@ -44,14 +44,20 @@ func (i *Interpreter) Step() {
 }
 
 func (i *Interpreter) SetForDebug() {
-	if i.IsRunnable(){
+	if i.IsRunnable() {
 		i.instructionPointer = i.initAddress
 		i.memoryTable.Goto(i.instructionPointer, 1)
 		i.accumulator = 0
 	}
 }
 
-// Reset reinicia el estado del intérprete.
+// Clean limpia el interprete sin afectar su habilitacion
+func (i *Interpreter) Clean() {
+	i.instructionPointer = -1
+	i.accumulator = 0
+}
+
+// Reset reinicia el estado del intérprete y la tabla
 func (i *Interpreter) Reset() {
 	i.instructionPointer = -1
 	i.accumulator = 0

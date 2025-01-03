@@ -59,12 +59,15 @@ func (ac *AppController) Run() error {
 
 // HandleKeyEvent maneja los eventos de teclado.
 func (ac *AppController) HandleKeyEvent(event *tcell.EventKey) *tcell.EventKey {
-	
+
 	switch event.Key() {
 	case tcell.KeyCtrlE:
 		ac.stateManager.SetState(state.Edit)
+		ac.interpreter.Clean()
+		ac.updateInterpreterInfo()
+
 	case tcell.KeyCtrlD:
-		if ac.interpreter.IsRunnable(){
+		if ac.interpreter.IsRunnable() {
 			ac.stateManager.SetState(state.Debug)
 			ac.interpreter.SetForDebug()
 			ac.updateInterpreterInfo()
@@ -73,16 +76,16 @@ func (ac *AppController) HandleKeyEvent(event *tcell.EventKey) *tcell.EventKey {
 
 	//reset
 	case tcell.KeyCtrlK:
-		if ac.stateManager.GetCurrentState() == state.Edit{
+		if ac.stateManager.GetCurrentState() == state.Edit {
 			ac.interpreter.Reset()
 			ac.updateInterpreterInfo()
 		}
-		
 
 	case tcell.KeyCtrlR:
 		ac.stateManager.SetState(state.Run)
+
 	case tcell.KeyCtrlI:
-		if ac.stateManager.GetCurrentState() == state.Edit{
+		if ac.stateManager.GetCurrentState() == state.Edit {
 			ac.setInitAddress()
 		}
 	// Ejecutar instrucción en modo Debug
@@ -92,13 +95,13 @@ func (ac *AppController) HandleKeyEvent(event *tcell.EventKey) *tcell.EventKey {
 			ac.updateInterpreterInfo()
 		}
 		if ac.stateManager.GetCurrentState() == state.Edit {
-			
+
 		}
 
 	// Ignorar otras teclas en modos específicos
 	default:
 		if ac.stateManager.GetCurrentState() == state.Debug {
-			// No permitir interacciones adicionales en modo Run
+		
 			return nil
 		}
 	}
