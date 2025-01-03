@@ -32,13 +32,23 @@ type MemoryTable struct {
 // NewMemoryTable crea y configura una nueva instancia de MemoryTable.
 func NewMemoryTable(rows int) *MemoryTable {
 	memoryTable := &MemoryTable{
-		table:   tview.NewTable(),
+		table:   tview.NewTable(), //.SetOffset(8,0),
 		rows:    rows,
 		prevRow: 1,
 		prevCol: 1,
 	}
 	memoryTable.initTable()
 	return memoryTable
+}
+
+func (m *MemoryTable) ScrollToCurrentRow(row int) {
+	// Calcular el nuevo desplazamiento
+	visibleRows := 8 // hacer constante global
+	if row >= visibleRows {
+		m.table.SetOffset(row-visibleRows+1, 0)
+	} else {
+		m.table.SetOffset(0, 0)
+	}
 }
 
 func (m *MemoryTable) GetSize() int {
@@ -211,8 +221,8 @@ func NewUI(rows int) *UI {
 	mainPage := &MainPage{
 		Table:           NewMemoryTable(rows),
 		Title:           tview.NewTextView().SetDynamicColors(true).SetTextAlign(tview.AlignCenter).SetText(asciiTitle),
-		InfoState:       tview.NewTextView().SetDynamicColors(true).SetTextAlign(tview.AlignLeft),
-		InfoInterpreter: tview.NewTextView().SetDynamicColors(true).SetTextAlign(tview.AlignLeft),
+		InfoState:       tview.NewTextView().SetDynamicColors(true).SetTextAlign(tview.AlignCenter),
+		InfoInterpreter: tview.NewTextView().SetDynamicColors(true).SetTextAlign(tview.AlignCenter),
 	}
 
 	// Configurar MenuGrid
@@ -225,9 +235,9 @@ func NewUI(rows int) *UI {
 	// Configurar RootGrid
 	mainPage.RootGrid = tview.NewGrid().
 		SetRows(0).
-		SetColumns(0, 48).
-		AddItem(mainPage.Table.GetTable(), 0, 0, 1, 1, 0, 0, true).
-		AddItem(mainPage.MenuGrid, 0, 1, 1, 1, 0, 0, false)
+		SetColumns(44, 0).
+		AddItem(mainPage.MenuGrid, 0, 0, 1, 1, 0, 0, false).
+		AddItem(mainPage.Table.GetTable(), 0, 1, 1, 1, 0, 0, true)
 
 	// Asignar MainPage a UI
 	ui.MainPage = *mainPage
