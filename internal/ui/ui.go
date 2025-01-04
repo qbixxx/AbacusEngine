@@ -120,8 +120,12 @@ func (m *MemoryTable) handleInput(event *tcell.EventKey) *tcell.EventKey {
 			if len(cell.Text) < 4 {
 				cell.SetText(cell.Text + string(event.Rune()))
 			}
+			
+			m.updateCellColor(cell)
+
 		} else if column == 2 {
 			cell.SetText(cell.Text + string(event.Rune()))
+			
 		}
 		m.table.SetCell(row, column, cell)
 		return nil
@@ -151,6 +155,18 @@ func (m *MemoryTable) handleInput(event *tcell.EventKey) *tcell.EventKey {
 	return event
 }
 
+
+func (m *MemoryTable) updateCellColor(cell *tview.TableCell) {
+	switch cell.Text {
+	case "NOP":
+		cell.SetTextColor(tcell.ColorGreen)
+	case "INC", "DEC":
+		cell.SetTextColor(tcell.ColorBlue)
+	default:
+		cell.SetTextColor(tcell.ColorRed)
+	}
+}
+
 func (m *MemoryTable) Goto(row int, column int) {
 	m.table.Select(row+1, column)
 }
@@ -166,6 +182,7 @@ func (m *MemoryTable) ResetTable() {
 	for row := 1; row <= m.rows; row++ {
 		m.table.GetCell(row, 1).SetText("NOP")
 		m.table.GetCell(row, 2).SetText("")
+		m.updateCellColor(m.table.GetCell(row,1))
 	}
 }
 
@@ -207,6 +224,7 @@ type MainPage struct {
 	Title           *tview.TextView
 	InfoState       *tview.TextView
 	InfoInterpreter *tview.TextView
+	Footer			*tview.TextView
 }
 
 func NewUI(rows int) *UI {
@@ -219,10 +237,11 @@ func NewUI(rows int) *UI {
 
 	// Inicializar MainPage
 	mainPage := &MainPage{
-		Table:           NewMemoryTable(rows),
-		Title:           tview.NewTextView().SetDynamicColors(true).SetTextAlign(tview.AlignCenter).SetText(asciiTitle),
-		InfoState:       tview.NewTextView().SetDynamicColors(true).SetTextAlign(tview.AlignCenter),
-		InfoInterpreter: tview.NewTextView().SetDynamicColors(true).SetTextAlign(tview.AlignCenter),
+		Table:           	NewMemoryTable(rows),
+		Title:           	tview.NewTextView().SetDynamicColors(true).SetTextAlign(tview.AlignCenter).SetText(asciiTitle),
+		InfoState:       	tview.NewTextView().SetDynamicColors(true).SetTextAlign(tview.AlignCenter),
+		InfoInterpreter: 	tview.NewTextView().SetDynamicColors(true).SetTextAlign(tview.AlignCenter),
+		Footer: 			tview.NewTextView().SetDynamicColors(true).SetTextAlign(tview.AlignCenter).SetText("[black:green]^E[white:black] Edit	[black:green]^D[white:black] Debug	[black:green]^R[white:black] Run	[black:green]^I[white:black] Set Init Address	[black:green]^K[white:black] Reset"),
 	}
 
 	// Configurar MenuGrid
@@ -234,10 +253,11 @@ func NewUI(rows int) *UI {
 
 	// Configurar RootGrid
 	mainPage.RootGrid = tview.NewGrid().
-		SetRows(0).
+		SetRows(-1,1).
 		SetColumns(44, 0).
 		AddItem(mainPage.MenuGrid, 0, 0, 1, 1, 0, 0, false).
-		AddItem(mainPage.Table.GetTable(), 0, 1, 1, 1, 0, 0, true)
+		AddItem(mainPage.Table.GetTable(), 0, 1, 1, 1, 0, 0, true).
+		AddItem(mainPage.Footer, 1, 0, 1, 2, 0, 0, false) 
 
 	// Asignar MainPage a UI
 	ui.MainPage = *mainPage
@@ -316,9 +336,14 @@ func (ui *UI) UpdateInterpreterInfo(rip , acc, initAdr int, runnable bool) {
 		colorEnable = "[red]"
 	}
 
+	if rip == -1{
+		ui.MainPage.InfoInterpreter.SetText(fmt.Sprintf("RIP: [red]undefined[white]\nAccumulator: %d\nInit Address: "+colorEnable+"%d\n"+"[white]Enabled: "+colorEnable+"%v", acc, initAdr, runnable))
+	}else{
+		ui.MainPage.InfoInterpreter.SetText(fmt.Sprintf("RIP: %03X\nAccumulator: %d\nInit Address: "+colorEnable+"%d\n"+"[white]Enabled: "+colorEnable+"%v", rip, acc, initAdr, runnable))
+	}
 
 	//ui.MainPage.InfoInterpreter.SetText(fmt.Sprintf("[red]%s", info))
 	
-	ui.MainPage.InfoInterpreter.SetText(fmt.Sprintf("RIP: %03X\nAccumulator: %d\nInit Address: "+colorEnable+"%d\n"+"[white]Enabled: "+colorEnable+"%v", rip, acc, initAdr, runnable))
+	
 
 }
