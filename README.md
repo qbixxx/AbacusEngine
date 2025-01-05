@@ -1,2 +1,2 @@
 # AbacusEngine
-![Peek 2025-01-04 20-43](https://github.com/user-attachments/assets/1e8f5ee9-e211-4f90-a741-ece6d25fc59c)
+![Peek 2025-01-04 22-57](https://github.com/user-attachments/assets/a547ceae-71d3-4021-a7c4-258b3cfb7bf7)
