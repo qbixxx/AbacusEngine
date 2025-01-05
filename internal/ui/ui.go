@@ -289,22 +289,37 @@ func NewUI(rows int) *UI {
 			}
 		})
 
+		inputField.SetFieldBackgroundColor(tcell.ColorLightGreen).SetFieldTextColor(tcell.ColorBlack)
+		inputField.Box.SetBorder(true)
+
+		
 	// Crear un modal para el campo de entrada
-	modal := tview.NewFlex().
-		SetDirection(tview.FlexRow).
-		AddItem(inputField, 3, 1, true)
+	//modal := tview.NewFlex().
+	//	SetDirection(tview.FlexRow).
+	//	AddItem(inputField, 3, 1, true)
 
 	// Agregar el modal como una nueva página
-	pages.AddPage("input", modal, true, false)
+	//pages.AddPage("input", modal, true, false)
 	// Agregar páginas a `ui.pages`
-	ui.Pages.AddPage("main", mainPage.RootGrid, true, true)
-	ui.Pages.AddPage("input", tview.NewFlex().SetDirection(tview.FlexRow).AddItem(inputField, 3, 1, true), true, false)
 
+	modal := func(p tview.Primitive, width, height int) tview.Primitive {
+		return tview.NewFlex().
+			AddItem(nil, 0, 1, false).
+			AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+				AddItem(nil, 0, 1, false).
+				AddItem(p, height, 1, true).
+				AddItem(nil, 0, 1, false), width, 1, true).
+			AddItem(nil, 0, 1, false)
+	}
+	ui.Pages.AddPage("main", mainPage.RootGrid, true, true)
+	//ui.Pages.AddPage("input", tview.NewFlex().SetDirection(tview.FlexRow).AddItem(inputField, 3, 1, true), true, false)
+	ui.Pages.AddPage("input", modal(inputField, 42, 3), true, true)
+	ui.Pages.SwitchToPage("main")
 	return ui
 }
 
 func (ui *UI) SwitchToPage(page string) {
-	ui.Pages.SwitchToPage(page)
+	ui.Pages.ShowPage(page)
 
 }
 
