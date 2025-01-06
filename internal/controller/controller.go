@@ -4,10 +4,11 @@ import (
 	"abacus_engine/internal/interpreter"
 	"abacus_engine/internal/state"
 	"abacus_engine/internal/ui"
-	"fmt"
+	//"fmt"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
+	"strconv"
 )
 
 type AppController struct {
@@ -27,7 +28,11 @@ func NewAppController(rows int) *AppController {
 		//fmt.Printf("Setting initAddress to %s\n", value)
 		// Convertir el valor a entero
 		var initAddress int
-		fmt.Sscanf(value, "%d", &initAddress)
+		//fmt.Sscanf(value, "%d", &initAddress)
+
+		numericData64, _ := strconv.ParseInt(value, 16, 0)
+		initAddress = int(numericData64)
+
 		interpreter.SetInitAddress(initAddress)
 
 		// Actualizar la información del intérprete en la UI
@@ -83,6 +88,10 @@ func (ac *AppController) HandleKeyEvent(event *tcell.EventKey) *tcell.EventKey {
 
 	case tcell.KeyCtrlR:
 		ac.stateManager.SetState(state.Run)
+		for ac.interpreter.GetRIP() != -1{
+			ac.interpreter.Step()
+			ac.updateInterpreterInfo()
+		}
 
 	case tcell.KeyCtrlI:
 		if ac.stateManager.GetCurrentState() == state.Edit {
@@ -101,7 +110,7 @@ func (ac *AppController) HandleKeyEvent(event *tcell.EventKey) *tcell.EventKey {
 	// Ignorar otras teclas en modos específicos
 	default:
 		if ac.stateManager.GetCurrentState() == state.Debug {
-		
+
 			return nil
 		}
 	}
