@@ -81,7 +81,10 @@ func (i *Interpreter) Step() {
 		i.instructionPointer++
 
 	case '5': // No definido
+		i.instructionPointer++
+
 	case '6': // No definido
+		i.instructionPointer++
 
 	case '7': // Bifurcacion si AC == 0
 		if i.accumulator == 0 {
