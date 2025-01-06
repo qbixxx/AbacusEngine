@@ -366,5 +366,4 @@ func (ui *UI) UpdateInterpreterInfo(rip, acc, initAdr int, runnable bool) {
 		ui.MainPage.InfoInterpreter.SetText(fmt.Sprintf("RIP: %03X\nAccumulator: %d\nInit Address: "+colorEnable+"%03X\n"+"[white]Enabled: "+colorEnable+"%v", rip, acc, initAdr, runnable))
 	}
 
-
 }

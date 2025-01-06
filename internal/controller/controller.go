@@ -88,7 +88,7 @@ func (ac *AppController) HandleKeyEvent(event *tcell.EventKey) *tcell.EventKey {
 
 	case tcell.KeyCtrlR:
 		ac.stateManager.SetState(state.Run)
-		for ac.interpreter.GetRIP() != -1{
+		for ac.interpreter.GetRIP() != -1 {
 			ac.interpreter.Step()
 			ac.updateInterpreterInfo()
 		}

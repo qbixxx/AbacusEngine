@@ -14,9 +14,10 @@ type Interpreter struct {
 	accumulator        int
 }
 
-func (i *Interpreter) GetRIP() int{
+func (i *Interpreter) GetRIP() int {
 	return i.instructionPointer
 }
+
 // NewInterpreter crea una nueva instancia del intérprete conectado a la MemoryTable.
 func NewInterpreter(memoryTable *ui.MemoryTable) *Interpreter {
 	return &Interpreter{
@@ -36,7 +37,7 @@ func (i *Interpreter) SetInitAddress(address int) {
 }
 
 func (i *Interpreter) Step() {
-	if !i.IsRunnable(){
+	if !i.IsRunnable() {
 		return
 	}
 	// Obtener la instrucción completa desde la memoria
@@ -74,14 +75,14 @@ func (i *Interpreter) Step() {
 		fmt.Sscanf(d, "%d", &n)
 		i.accumulator += n
 		i.instructionPointer++
-	
+
 	case '4': // NOT
 		i.accumulator = i.accumulator * -1
 		i.instructionPointer++
-	
-	case '5':// No definido
-	case '6':// No definido
-	
+
+	case '5': // No definido
+	case '6': // No definido
+
 	case '7': // Bifurcacion si AC == 0
 		if i.accumulator == 0 {
 			i.instructionPointer = numericData
@@ -97,7 +98,7 @@ func (i *Interpreter) Step() {
 			i.instructionPointer++
 		}
 
-	case '9':  // Bifurcacion si AC < 0
+	case '9': // Bifurcacion si AC < 0
 		if i.accumulator < 0 {
 			i.instructionPointer = numericData
 			i.memoryTable.Goto(i.instructionPointer-1, 0)
