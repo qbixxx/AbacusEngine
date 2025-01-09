@@ -6,7 +6,7 @@ import (
 	"github.com/rivo/tview"
 )
 
-const asciiTitle = "[turquoise]" +
+const asciiTitle = "[lightgreen]" +
 	"_____________                             \n" +
 	"___    |__  /_______ __________  _________\n" +
 	"__  /| |_  __ \\  __ `/  ___/  / / /_  ___/\n" +
@@ -19,6 +19,35 @@ const asciiTitle = "[turquoise]" +
 	"_  /___  _  / / /  /_/ /_  / _  / / /  __/\n" +
 	"/_____/  /_/ /_/_\\__, / /_/  /_/ /_/\\___/ \n" +
 	"                /____/                    \n"
+
+//const asciiTitle = "[lightgreen]" +
+//"                         \n"+
+//" █████╗ ███╗   ██╗ █████╗ \n"+
+//"██╔══██╗████╗  ██║██╔══██╗\n"+
+//"███████║██╔██╗ ██║███████║\n"+
+//"██╔══██║██║╚██╗██║██╔══██║\n"+
+//"██║  ██║██║ ╚████║██║  ██║\n"+
+//"╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝\n"+
+//"Abacus's Not Assembly :)"
+
+//const asciiTitle = "[lightgreen]\n" +
+//
+//"                                                 \n"+
+//" █████╗ ██████╗  █████╗  ██████╗██╗   ██╗███████╗\n"+
+//"██╔══██╗██╔══██╗██╔══██╗██╔════╝██║   ██║██╔════╝\n"+
+//"██████║██████╔╝███████║██║     ██║   ██║███████╗\n"+
+//"██╔══██║██╔══██╗██╔══██║██║     ██║   ██║╚════██║\n"+
+//"██║  ██║██████╔╝██║  ██║╚██████╗╚██████╔╝███████║\n"+
+//"╚═╝  ╚═╝╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚══════╝\n"+
+//"                                                 \n"+
+//" █████╗  ██████╗  ██████╗  ██████╗               \n"+
+//"██╔══██╗██╔═████╗██╔═████╗██╔═████╗              \n"+
+//"╚██████║██║██╔██║██║██╔██║██║██╔██║              \n"+
+//" ╚═══██║████╔╝██║████╔╝██║████╔╝██║              \n"+
+//" █████╔╝╚██████╔╝╚██████╔╝╚██████╔╝              \n"+
+//" ╚════╝  ╚═════╝  ╚═════╝  ╚═════╝               \n"
+//
+//
 
 // MemoryTable encapsula la lógica y el comportamiento de la tabla de memoria.
 type MemoryTable struct {
@@ -42,7 +71,7 @@ func NewMemoryTable(rows int) *MemoryTable {
 
 func (m *MemoryTable) ScrollToCurrentRow(row int) {
 	// Calcular el nuevo desplazamiento
-	visibleRows := 8 // hacer constante global
+	visibleRows := 10 // hacer constante global
 	if row >= visibleRows {
 		m.table.SetOffset(row-visibleRows+1, 0)
 	} else {
@@ -169,13 +198,30 @@ func (m *MemoryTable) GetCell(row int) *tview.TableCell {
 }
 
 func (m *MemoryTable) updateCellColor(cell *tview.TableCell) {
-	switch cell.Text {
-	case "NOP":
-		cell.SetTextColor(tcell.ColorGreen)
-	case "INC", "DEC":
-		cell.SetTextColor(tcell.ColorBlue)
-	default:
+	switch cell.Text[0] {
+	case '0':
+		cell.SetTextColor(tcell.ColorYellow)
+	case '1':
+		cell.SetTextColor(tcell.ColorOrange)
+	case '2':
 		cell.SetTextColor(tcell.ColorRed)
+	case '3':
+		cell.SetTextColor(tcell.ColorMediumVioletRed)
+	case '4':
+		cell.SetTextColor(tcell.ColorHotPink)
+	case '7':
+		cell.SetTextColor(tcell.ColorLime)
+	case '8':
+		cell.SetTextColor(tcell.ColorTurquoise)
+	case '9':
+		cell.SetTextColor(tcell.ColorViolet)
+	case 'F':
+		cell.SetTextColor(tcell.ColorGrey)
+	default:
+		cell.SetTextColor(tcell.ColorWhite)
+	}
+	if cell.Text == "NOP" {
+		cell.SetTextColor(tcell.ColorGreen)
 	}
 }
 func (m *MemoryTable) Goto(row int, column int) {
@@ -321,14 +367,13 @@ func NewUI(rows int) *UI {
 			AddItem(nil, 0, 1, false)
 	}
 	ui.Pages.AddPage("main", mainPage.RootGrid, true, true)
-	//ui.Pages.AddPage("input", tview.NewFlex().SetDirection(tview.FlexRow).AddItem(inputField, 3, 1, true), true, false)
 	ui.Pages.AddPage("input", modal(inputField, 42, 3), true, true)
 	ui.Pages.SwitchToPage("main")
 	return ui
 }
 
-func (ui *UI) SwitchToPage(page string) {
-	ui.Pages.ShowPage(page)
+func (ui *UI) ShowInputField() {
+	ui.Pages.ShowPage("input")
 
 }
 

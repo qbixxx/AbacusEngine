@@ -4,8 +4,6 @@ import (
 	"abacus_engine/internal/interpreter"
 	"abacus_engine/internal/state"
 	"abacus_engine/internal/ui"
-	//"fmt"
-
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 	"strconv"
@@ -25,14 +23,10 @@ func NewAppController(rows int) *AppController {
 
 	// Configurar el callback para manejar initAddress desde la UI
 	ui.SetInitAddressCallback(func(value string) {
-		//fmt.Printf("Setting initAddress to %s\n", value)
-		// Convertir el valor a entero
-		var initAddress int
-		//fmt.Sscanf(value, "%d", &initAddress)
 
+		var initAddress int
 		numericData64, _ := strconv.ParseInt(value, 16, 0)
 		initAddress = int(numericData64)
-
 		interpreter.SetInitAddress(initAddress)
 
 		// Actualizar la información del intérprete en la UI
@@ -66,12 +60,13 @@ func (ac *AppController) Run() error {
 func (ac *AppController) HandleKeyEvent(event *tcell.EventKey) *tcell.EventKey {
 
 	switch event.Key() {
-	case tcell.KeyCtrlE:
+
+	case tcell.KeyCtrlE: // Edit
 		ac.stateManager.SetState(state.Edit)
 		ac.interpreter.Clean()
 		ac.updateInterpreterInfo()
 
-	case tcell.KeyCtrlD:
+	case tcell.KeyCtrlD: // Debug
 		if ac.interpreter.IsRunnable() {
 			ac.stateManager.SetState(state.Debug)
 			ac.interpreter.SetForDebug()
@@ -79,28 +74,32 @@ func (ac *AppController) HandleKeyEvent(event *tcell.EventKey) *tcell.EventKey {
 
 		}
 
-	//reset
-	case tcell.KeyCtrlK:
+	case tcell.KeyCtrlK: // Reset
 		if ac.stateManager.GetCurrentState() == state.Edit {
 			ac.interpreter.Reset()
 			ac.updateInterpreterInfo()
 		}
 
-	case tcell.KeyCtrlR:
+	case tcell.KeyCtrlR: // Run
 		ac.stateManager.SetState(state.Run)
-		for ac.interpreter.GetRIP() != -1 {
+		ac.interpreter.SetForDebug()
+		for ac.interpreter.IsRunnable() {
 			ac.interpreter.Step()
 			ac.updateInterpreterInfo()
 		}
+		ac.stateManager.SetState(state.Edit)
 
-	case tcell.KeyCtrlI:
+	case tcell.KeyCtrlI: // Input address form
 		if ac.stateManager.GetCurrentState() == state.Edit {
 			ac.setInitAddress()
 		}
-	// Ejecutar instrucción en modo Debug
+
 	case tcell.KeyEnter:
 		if ac.stateManager.GetCurrentState() == state.Debug {
 			ac.interpreter.Step()
+			if !ac.interpreter.IsRunnable() {
+				ac.stateManager.SetState(state.Edit)
+			}
 			ac.updateInterpreterInfo()
 		}
 		if ac.stateManager.GetCurrentState() == state.Edit {
@@ -118,9 +117,7 @@ func (ac *AppController) HandleKeyEvent(event *tcell.EventKey) *tcell.EventKey {
 	return event
 }
 func (ac *AppController) setInitAddress() {
-	ac.ui.SwitchToPage("input")
-	//ac.ui.SwitchToPage("main")
-
+	ac.ui.ShowInputField()
 }
 
 // updateInterpreterInfo actualiza la sección de información del intérprete en la UI.

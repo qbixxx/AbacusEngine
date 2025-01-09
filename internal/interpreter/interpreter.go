@@ -89,14 +89,14 @@ func (i *Interpreter) Step() {
 	case '7': // Bifurcacion si AC == 0
 		if i.accumulator == 0 {
 			i.instructionPointer = numericData
-			i.memoryTable.Goto(i.instructionPointer-1, 0)
+			i.memoryTable.Goto(i.instructionPointer-1, 1)
 		} else {
 			i.instructionPointer++
 		}
 	case '8': // Bifurcacion si AC > 0
 		if i.accumulator > 0 {
 			i.instructionPointer = numericData
-			i.memoryTable.Goto(i.instructionPointer-1, 0)
+			i.memoryTable.Goto(i.instructionPointer-1, 1)
 		} else {
 			i.instructionPointer++
 		}
@@ -104,7 +104,7 @@ func (i *Interpreter) Step() {
 	case '9': // Bifurcacion si AC < 0
 		if i.accumulator < 0 {
 			i.instructionPointer = numericData
-			i.memoryTable.Goto(i.instructionPointer-1, 0)
+			i.memoryTable.Goto(i.instructionPointer-1, 1)
 		} else {
 			i.instructionPointer++
 		}
@@ -112,15 +112,11 @@ func (i *Interpreter) Step() {
 	case 'F': // Fin del programa
 		i.instructionPointer = -1
 		i.initAddress = -1
-		return
+
 	default:
 		i.instructionPointer++
 	}
 
-	// Avanzar el puntero de instrucción
-	//i.instructionPointer++
-
-	// Desplazar la tabla a la fila actual
 	i.memoryTable.ScrollToCurrentRow(i.instructionPointer)
 }
 
@@ -146,7 +142,6 @@ func (i *Interpreter) Reset() {
 	i.accumulator = 0
 	i.initAddress = -1
 	i.memoryTable.ResetTable()
-	//i.memoryTable.ColorInitAddr(i.initAddress)
 }
 
 // GetState devuelve el estado actual del intérprete.
