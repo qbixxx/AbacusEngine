@@ -51,7 +51,10 @@ func (ac *AppController) Run() error {
 
 	// Configurar la interfaz principal
 	app.SetRoot(ac.ui.Pages, true)
+	
+	ac.InitializeHeap(100,199)
 	ac.updateInterpreterInfo()
+
 	// Ejecutar la aplicación
 	return app.Run()
 }
@@ -93,7 +96,9 @@ func (ac *AppController) HandleKeyEvent(event *tcell.EventKey) *tcell.EventKey {
 		if ac.stateManager.GetCurrentState() == state.Edit {
 			ac.setInitAddress()
 		}
-
+	case tcell.KeyCtrlH:
+		ac.ToggleHeap()
+		
 	case tcell.KeyEnter:
 		if ac.stateManager.GetCurrentState() == state.Debug {
 			ac.interpreter.Step()
@@ -116,6 +121,24 @@ func (ac *AppController) HandleKeyEvent(event *tcell.EventKey) *tcell.EventKey {
 
 	return event
 }
+
+func (ac *AppController) InitializeHeap(heapStart, heapEnd int) {
+	ui := ac.ui
+	ui.CreateHeapView(heapStart, heapEnd)
+
+	// Callback para actualizaciones
+	ui.MainPage.Table.OnHeapUpdate = func(row int, value string) {
+		ui.MainPage.UpdateHeap(row, value, heapStart, heapEnd)
+	}
+}
+
+func (ac *AppController) ToggleHeap() {
+	mp := &ac.ui.MainPage
+
+	mp.IsHeapVisible = !mp.IsHeapVisible // Alternar visibilidad
+	mp.UpdateLayout()                    // Actualizar el diseño de la página principal
+}
+
 func (ac *AppController) setInitAddress() {
 	ac.ui.ShowInputField()
 }

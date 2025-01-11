@@ -51,10 +51,11 @@ const asciiTitle = "[lightgreen]" +
 
 // MemoryTable encapsula la lógica y el comportamiento de la tabla de memoria.
 type MemoryTable struct {
-	table   *tview.Table // Componente gráfico de la tabla
-	rows    int          // Cantidad de filas
-	prevRow int          // Fila previamente seleccionada
-	prevCol int          // Columna previamente seleccionada
+	table        *tview.Table // Componente gráfico de la tabla
+	rows         int          // Cantidad de filas
+	prevRow      int          // Fila previamente seleccionada
+	prevCol      int          // Columna previamente seleccionada
+	OnHeapUpdate func(row int, value string) // Callback para actualizaciones del heap
 }
 
 // NewMemoryTable crea y configura una nueva instancia de MemoryTable.
@@ -244,16 +245,20 @@ func (m *MemoryTable) ResetTable() {
 }
 
 func (m *MemoryTable) WriteCell(row int, accumulator int) {
-	cell := m.table.GetCell(row, 1)
+	cell := m.table.GetCell(row+1, 1) // +1 porque la fila 0 es para encabezados
 
 	// Formatear el acumulador como string con ceros completados
 	formattedData := fmt.Sprintf("%04d", accumulator)
 	cell.SetText(formattedData)
 
-	m.table.SetCell(row, 1, cell)
+	m.table.SetCell(row+1, 1, cell) // +1 porque la fila 0 es el encabezado
 	m.updateCellColor(cell)
-}
 
+	// Llamar al callback si está configurado
+	if m.OnHeapUpdate != nil {
+		m.OnHeapUpdate(row, formattedData)
+	}
+}
 // handleSelectionChange maneja el evento de cambio de selección.
 func (m *MemoryTable) handleSelectionChange(newRow, newCol int) {
 	if m.prevCol == 1 {
@@ -288,12 +293,98 @@ func (ui *UI) SetInitAddressCallback(callback func(string)) {
 type MainPage struct {
 	RootGrid        *tview.Grid
 	Table           *MemoryTable
+	HeapTable       *tview.Table    // Tabla del heap
 	MenuGrid        *tview.Grid
 	Title           *tview.TextView
 	InfoState       *tview.TextView
 	InfoInterpreter *tview.TextView
 	Footer          *tview.TextView
+	IsHeapVisible   bool            // Indica si la tabla del heap está visible
 }
+
+func (ui *UI) CreateHeapView(heapStart, heapEnd int) {
+    ui.MainPage.HeapTable = tview.NewTable()
+    ui.MainPage.HeapTable.SetBorders(true).
+        SetSelectable(false, false).
+        SetBorder(true).
+        SetBorderColor(tcell.ColorRed).
+        SetTitle("- Heap -").
+        SetTitleAlign(tview.AlignCenter)
+
+	
+    // Configurar encabezados
+    headers := []string{"  Memory Address  ", "  Data "}
+    for col, header := range headers {
+        ui.MainPage.HeapTable.SetCell(0, col, tview.NewTableCell(header).
+            SetTextColor(tview.Styles.SecondaryTextColor).
+            SetAlign(tview.AlignCenter))
+    }
+
+    // Rellenar la tabla con datos iniciales (vacíos)
+    for i := heapStart; i <= heapEnd; i++ {
+        ui.MainPage.HeapTable.SetCell(i-heapStart+1, 0, tview.NewTableCell(fmt.Sprintf("%03X", i)).
+            SetTextColor(tview.Styles.PrimaryTextColor).
+            SetAlign(tview.AlignCenter))
+        ui.MainPage.HeapTable.SetCell(i-heapStart+1, 1, tview.NewTableCell("NOP").
+            SetTextColor(tview.Styles.PrimaryTextColor).
+            SetAlign(tview.AlignCenter))
+    }
+
+	
+}
+
+
+func (mp *MainPage) CreateHeapTable(heapStart, heapEnd int) {
+	mp.HeapTable = tview.NewTable().
+		SetBorders(true).
+		SetSelectable(false, false)
+	mp.HeapTable.SetBorderColor(tcell.ColorRed)
+	// Encabezados
+	headers := []string{"  Memory Address  ", "  Data  "}
+	for col, header := range headers {
+		mp.HeapTable.SetCell(0, col, tview.NewTableCell(header).
+			SetTextColor(tview.Styles.SecondaryTextColor).
+			SetAlign(tview.AlignCenter))
+	}
+
+	// Rellenar la tabla
+	for i := heapStart; i <= heapEnd; i++ {
+		mp.HeapTable.SetCell(i-heapStart+1, 0, tview.NewTableCell(fmt.Sprintf("%03X", i)).
+			SetTextColor(tview.Styles.PrimaryTextColor).
+			SetAlign(tview.AlignCenter))
+		mp.HeapTable.SetCell(i-heapStart+1, 1, tview.NewTableCell("NOP").
+			SetTextColor(tview.Styles.PrimaryTextColor).
+			SetAlign(tview.AlignCenter))
+	}
+}
+
+func (mp *MainPage) UpdateHeap(row int, value string, heapStart, heapEnd int) {
+	if row >= heapStart && row <= heapEnd {
+		mp.HeapTable.GetCell(row-heapStart+1, 1).SetText(value)
+	}
+}
+
+func (mp *MainPage) UpdateLayout() {
+	mp.RootGrid.Clear() // Limpia la disposición actual
+
+	if mp.IsHeapVisible {
+		// Layout con la tabla del heap visible
+		mp.RootGrid.SetRows(-1, 1).
+			SetColumns(44, -1, 30). // Se añade una columna para el heap
+			AddItem(mp.MenuGrid, 0, 0, 1, 1, 0, 0, false).
+			AddItem(mp.Table.GetTable(), 0, 1, 1, 1, 0, 0, true).
+			AddItem(mp.HeapTable, 0, 2, 1, 1, 0, 0, false). // Añadir el heap
+			AddItem(mp.Footer, 1, 0, 1, 3, 0, 0, false)
+	} else {
+		// Layout sin la tabla del heap
+		mp.RootGrid.SetRows(-1, 1).
+			SetColumns(44, 0).
+			AddItem(mp.MenuGrid, 0, 0, 1, 1, 0, 0, false).
+			AddItem(mp.Table.GetTable(), 0, 1, 1, 1, 0, 0, true).
+			AddItem(mp.Footer, 1, 0, 1, 2, 0, 0, false)
+	}
+}
+
 
 func NewUI(rows int) *UI {
 
@@ -376,6 +467,17 @@ func (ui *UI) ShowInputField() {
 	ui.Pages.ShowPage("input")
 
 }
+
+func (ui *UI) ToggleHeapView() {
+    if ui.MainPage.IsHeapVisible {
+        ui.MainPage.RootGrid.RemoveItem(ui.MainPage.HeapTable)
+      	ui.MainPage.IsHeapVisible = false
+    } else {
+        ui.MainPage.RootGrid.AddItem(ui.MainPage.HeapTable, 0, 2, 1, 1, 0, 0, false)
+        ui.MainPage.IsHeapVisible = true
+    }
+}
+
 
 // UpdateStateTitle actualiza la sección State con el estado actual.
 func (ui *UI) UpdateStateInfo(state string) {
