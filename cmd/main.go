@@ -5,7 +5,7 @@ import (
 )
 
 func main() {
-	rows := 5000
+	rows := 4096
 	appController := controller.NewAppController(rows)
 
 	if err := appController.Run(); err != nil {

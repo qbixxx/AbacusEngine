@@ -58,11 +58,15 @@ func (i *Interpreter) Step() {
 		i.accumulator = numericData
 		i.instructionPointer++
 
-	case '1': // Carga
-		d := i.memoryTable.GetInstruction(numericData)
-		var n int
-		fmt.Sscanf(d, "%d", &n)
-		i.accumulator = n
+	case '1': // Carga desde memoria
+		d := i.memoryTable.GetInstruction(numericData)  // Obtener el valor de la celda
+		numericValue, err := strconv.ParseInt(d, 16, 0) // Interpretar como hexadecimal
+		if err != nil {
+			fmt.Printf("Error al convertir el valor %s a número: %v\n", d, err)
+			i.accumulator = 0 // Opcional: Establecer acumulador a 0 en caso de error
+		} else {
+			i.accumulator = int(numericValue) // Convertir a entero y asignar al acumulador
+		}
 		i.instructionPointer++
 
 	case '2': // Guardado - escritura

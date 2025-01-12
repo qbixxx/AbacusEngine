@@ -44,15 +44,14 @@ func NewAppController(rows int) *AppController {
 
 // Run inicia la aplicación.
 func (ac *AppController) Run() error {
-	app := tview.NewApplication()
+	app := tview.NewApplication().EnableMouse(true)
 
 	// Configurar manejo de teclas
 	app.SetInputCapture(ac.HandleKeyEvent)
-
+	ac.InitializeHeap(4001, 4096)
 	// Configurar la interfaz principal
 	app.SetRoot(ac.ui.Pages, true)
-	
-	ac.InitializeHeap(100,199)
+
 	ac.updateInterpreterInfo()
 
 	// Ejecutar la aplicación
@@ -98,7 +97,7 @@ func (ac *AppController) HandleKeyEvent(event *tcell.EventKey) *tcell.EventKey {
 		}
 	case tcell.KeyCtrlH:
 		ac.ToggleHeap()
-		
+
 	case tcell.KeyEnter:
 		if ac.stateManager.GetCurrentState() == state.Debug {
 			ac.interpreter.Step()
