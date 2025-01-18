@@ -248,7 +248,7 @@ func (m *MemoryTable) WriteCell(row int, accumulator int) {
 	cell := m.table.GetCell(row, 1) // +1 porque la fila 0 es para encabezados
 
 	// Formatear el acumulador como string con ceros completados
-	formattedData := fmt.Sprintf("%04d", accumulator)
+	formattedData := fmt.Sprintf("%04X", accumulator)
 	cell.SetText(formattedData)
 
 	m.table.SetCell(row, 1, cell) // +1 porque la fila 0 es el encabezado
@@ -360,7 +360,7 @@ func (mp *MainPage) CreateHeapTable(heapStart, heapEnd int) {
 
 func (mp *MainPage) UpdateHeap(row int, value string, heapStart, heapEnd int) {
 	if row >= heapStart && row <= heapEnd {
-		mp.HeapTable.GetCell(row-heapStart+1, 1).SetText(value)
+		mp.HeapTable.GetCell(row-heapStart, 1).SetText(value)
 	}
 }
 
@@ -506,9 +506,9 @@ func (ui *UI) UpdateInterpreterInfo(rip, acc, initAdr int, runnable bool) {
 	}
 
 	if rip == -1 {
-		ui.MainPage.InfoInterpreter.SetText(fmt.Sprintf("RIP: [red]undefined[white]\nAccumulator: %d\nInit Address: "+colorEnable+"%03X\n"+"[white]Enabled: "+colorEnable+"%v", acc, initAdr, runnable))
+		ui.MainPage.InfoInterpreter.SetText(fmt.Sprintf("RIP: [red]undefined[white]\nAccumulator: %03X\nInit Address: "+colorEnable+"%03X\n"+"[white]Enabled: "+colorEnable+"%v", acc, initAdr, runnable))
 	} else {
-		ui.MainPage.InfoInterpreter.SetText(fmt.Sprintf("RIP: %03X\nAccumulator: %d\nInit Address: "+colorEnable+"%03X\n"+"[white]Enabled: "+colorEnable+"%v", rip, acc, initAdr, runnable))
+		ui.MainPage.InfoInterpreter.SetText(fmt.Sprintf("RIP: %03X\nAccumulator: %03X\nInit Address: "+colorEnable+"%03X\n"+"[white]Enabled: "+colorEnable+"%v", rip, acc, initAdr, runnable))
 	}
 
 }

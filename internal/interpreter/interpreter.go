@@ -75,9 +75,8 @@ func (i *Interpreter) Step() {
 
 	case '3': // Suma
 		d := i.memoryTable.GetInstruction(numericData)
-		var n int
-		fmt.Sscanf(d, "%d", &n)
-		i.accumulator += n
+		numericValue, _ := strconv.ParseInt(d, 16, 0) // Interpretar como hexadecimal
+		i.accumulator += int(numericValue)
 		i.instructionPointer++
 
 	case '4': // NOT
