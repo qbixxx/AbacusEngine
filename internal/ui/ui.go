@@ -20,16 +20,6 @@ const asciiTitle = "[lightgreen]" +
 	"/_____/  /_/ /_/_\\__, / /_/  /_/ /_/\\___/ \n" +
 	"                /____/                    \n"
 
-//const asciiTitle = "[lightgreen]" +
-//"                         \n"+
-//" █████╗ ███╗   ██╗ █████╗ \n"+
-//"██╔══██╗████╗  ██║██╔══██╗\n"+
-//"███████║██╔██╗ ██║███████║\n"+
-//"██╔══██║██║╚██╗██║██╔══██║\n"+
-//"██║  ██║██║ ╚████║██║  ██║\n"+
-//"╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝\n"+
-//"Abacus's Not Assembly :)"
-
 //const asciiTitle = "[lightgreen]\n" +
 //
 //"                                                 \n"+
@@ -66,6 +56,7 @@ func NewMemoryTable(rows int) *MemoryTable {
 		prevRow: 1,
 		prevCol: 1,
 	}
+
 	memoryTable.initTable()
 	return memoryTable
 }
@@ -417,6 +408,7 @@ func NewUI(rows int) *UI {
 		AddItem(mainPage.Table.GetTable(), 0, 1, 1, 1, 0, 0, true).
 		AddItem(mainPage.Footer, 1, 0, 1, 2, 0, 0, false)
 
+	
 	// Asignar MainPage a UI
 	ui.MainPage = *mainPage
 
