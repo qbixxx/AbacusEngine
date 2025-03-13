@@ -1,14 +1,14 @@
 package interpreter
 
 import (
-	"abacus_engine/internal/ui"
+	"abacus_engine/internal/memory"
 	"fmt"
 	"strconv"
 )
 
 // Interpreter representa al intérprete que lee directamente desde la tabla de memoria.
 type Interpreter struct {
-	memoryTable        *ui.MemoryTable
+	memoryTable        *memory.MemoryTable
 	initAddress        int
 	instructionPointer int
 	accumulator        int
@@ -19,7 +19,7 @@ func (i *Interpreter) GetRIP() int {
 }
 
 // NewInterpreter crea una nueva instancia del intérprete conectado a la MemoryTable.
-func NewInterpreter(memoryTable *ui.MemoryTable) *Interpreter {
+func NewInterpreter(memoryTable *memory.MemoryTable) *Interpreter {
 	return &Interpreter{
 		memoryTable:        memoryTable,
 		initAddress:        -1,

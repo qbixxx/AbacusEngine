@@ -10,9 +10,9 @@ import (
 )
 
 type AppController struct {
-	ui           *ui.UI
-	stateManager *state.StateManager
-	interpreter  *interpreter.Interpreter
+	Ui           *ui.UI
+	StateManager *state.StateManager
+	Interpreter  *interpreter.Interpreter
 }
 
 // NewAppController crea una nueva instancia del controlador de la aplicación.
@@ -36,9 +36,9 @@ func NewAppController(rows int) *AppController {
 	})
 
 	return &AppController{
-		ui:           ui,
-		stateManager: stateManager,
-		interpreter:  interpreter,
+		Ui:           ui,
+		StateManager: stateManager,
+		Interpreter:  interpreter,
 	}
 }
 
@@ -50,7 +50,7 @@ func (ac *AppController) Run() error {
 	app.SetInputCapture(ac.HandleKeyEvent)
 	ac.InitializeHeap(4001, 4096)
 	// Configurar la interfaz principal
-	app.SetRoot(ac.ui.Pages, true)
+	app.SetRoot(ac.Ui.PageHolder, true)
 
 	ac.updateInterpreterInfo()
 
@@ -64,55 +64,55 @@ func (ac *AppController) HandleKeyEvent(event *tcell.EventKey) *tcell.EventKey {
 	switch event.Key() {
 
 	case tcell.KeyCtrlE: // Edit
-		ac.stateManager.SetState(state.Edit)
-		ac.interpreter.Clean()
+		ac.StateManager.SetState(state.Edit)
+		ac.Interpreter.Clean()
 		ac.updateInterpreterInfo()
 
 	case tcell.KeyCtrlD: // Debug
-		if ac.interpreter.IsRunnable() {
-			ac.stateManager.SetState(state.Debug)
-			ac.interpreter.SetForDebug()
+		if ac.Interpreter.IsRunnable() {
+			ac.StateManager.SetState(state.Debug)
+			ac.Interpreter.SetForDebug()
 			ac.updateInterpreterInfo()
 
 		}
 
 	case tcell.KeyCtrlK: // Reset
-		if ac.stateManager.GetCurrentState() == state.Edit {
-			ac.interpreter.Reset()
+		if ac.StateManager.GetCurrentState() == state.Edit {
+			ac.Interpreter.Reset()
 			ac.updateInterpreterInfo()
 		}
 
 	case tcell.KeyCtrlR: // Run
-		ac.stateManager.SetState(state.Run)
-		ac.interpreter.SetForDebug()
-		for ac.interpreter.IsRunnable() {
-			ac.interpreter.Step()
+		ac.StateManager.SetState(state.Run)
+		ac.Interpreter.SetForDebug()
+		for ac.Interpreter.IsRunnable() {
+			ac.Interpreter.Step()
 			ac.updateInterpreterInfo()
 		}
-		ac.stateManager.SetState(state.Edit)
+		ac.StateManager.SetState(state.Edit)
 
 	case tcell.KeyCtrlI: // Input address form
-		if ac.stateManager.GetCurrentState() == state.Edit {
+		if ac.StateManager.GetCurrentState() == state.Edit {
 			ac.setInitAddress()
 		}
 	case tcell.KeyCtrlH:
 		ac.ToggleHeap()
 
 	case tcell.KeyEnter:
-		if ac.stateManager.GetCurrentState() == state.Debug {
-			ac.interpreter.Step()
-			if !ac.interpreter.IsRunnable() {
-				ac.stateManager.SetState(state.Edit)
+		if ac.StateManager.GetCurrentState() == state.Debug {
+			ac.Interpreter.Step()
+			if !ac.Interpreter.IsRunnable() {
+				ac.StateManager.SetState(state.Edit)
 			}
 			ac.updateInterpreterInfo()
 		}
-		if ac.stateManager.GetCurrentState() == state.Edit {
+		if ac.StateManager.GetCurrentState() == state.Edit {
 
 		}
 
 	// Ignorar otras teclas en modos específicos
 	default:
-		if ac.stateManager.GetCurrentState() == state.Debug {
+		if ac.StateManager.GetCurrentState() == state.Debug {
 
 			return nil
 		}
@@ -122,7 +122,7 @@ func (ac *AppController) HandleKeyEvent(event *tcell.EventKey) *tcell.EventKey {
 }
 
 func (ac *AppController) InitializeHeap(heapStart, heapEnd int) {
-	ui := ac.ui
+	ui := ac.Ui
 	ui.CreateHeapView(heapStart, heapEnd)
 
 	// Callback para actualizaciones
@@ -132,18 +132,18 @@ func (ac *AppController) InitializeHeap(heapStart, heapEnd int) {
 }
 
 func (ac *AppController) ToggleHeap() {
-	mp := &ac.ui.MainPage
+	mp := ac.Ui.MainPage
 
 	mp.IsHeapVisible = !mp.IsHeapVisible // Alternar visibilidad
 	mp.UpdateLayout()                    // Actualizar el diseño de la página principal
 }
 
 func (ac *AppController) setInitAddress() {
-	ac.ui.ShowInputField()
+	ac.Ui.ShowInputField()
 }
 
 // updateInterpreterInfo actualiza la sección de información del intérprete en la UI.
 func (ac *AppController) updateInterpreterInfo() {
-	instructionPointer, accumulator, initAddress, runnable := ac.interpreter.GetState()
-	ac.ui.UpdateInterpreterInfo(instructionPointer, accumulator, initAddress, runnable)
+	instructionPointer, accumulator, initAddress, runnable := ac.Interpreter.GetState()
+	ac.Ui.UpdateInterpreterInfo(instructionPointer, accumulator, initAddress, runnable)
 }
