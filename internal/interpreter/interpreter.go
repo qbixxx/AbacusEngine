@@ -59,14 +59,21 @@ func (i *Interpreter) Step() {
 		i.instructionPointer++
 
 	case '1': // Carga desde memoria
-		d := i.memoryTable.GetInstruction(numericData)  // Obtener el valor de la celda
-		numericValue, err := strconv.ParseInt(d, 16, 0) // Interpretar como hexadecimal
-		if err != nil {
-			fmt.Printf("Error al convertir el valor %s a número: %v\n", d, err)
-			i.accumulator = 0 // Opcional: Establecer acumulador a 0 en caso de error
-		} else {
-			i.accumulator = int(numericValue) // Convertir a entero y asignar al acumulador
-		}
+	d := i.memoryTable.GetInstruction(numericData)
+
+	if d == "NOP" {
+		i.instructionPointer++
+		return
+	}
+
+
+	numericValue, err := strconv.ParseInt(d, 16, 0)
+	if err != nil {
+		fmt.Printf("Error al convertir %q a número: %v\n", d, err)
+		i.accumulator = 0
+	} else {
+		i.accumulator = int(numericValue)
+	}
 		i.instructionPointer++
 
 	case '2': // Guardado - escritura
@@ -120,7 +127,7 @@ func (i *Interpreter) Step() {
 		i.instructionPointer++
 	}
 
-	i.memoryTable.ScrollToCurrentRow(i.instructionPointer)
+	//i.memoryTable.ScrollToCurrentRow(i.instructionPointer)
 }
 
 func (i *Interpreter) SetForDebug() {

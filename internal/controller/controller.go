@@ -91,6 +91,9 @@ func (ac *AppController) HandleKeyEvent(event *tcell.EventKey) *tcell.EventKey {
 		}
 		ac.StateManager.SetState(state.Edit)
 
+	case tcell.KeyCtrlO: // File Manager
+		ac.Ui.PageHolder.SwitchToPage("file-manager")
+
 	case tcell.KeyCtrlI: // Input address form
 		if ac.StateManager.GetCurrentState() == state.Edit {
 			ac.setInitAddress()
