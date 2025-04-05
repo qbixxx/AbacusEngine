@@ -1,10 +1,10 @@
 package ui
 
 import (
-	"github.com/rivo/tview"
 	"abacus_engine/internal/memory"
-	"github.com/gdamore/tcell/v2"
 	"fmt"
+	"github.com/gdamore/tcell/v2"
+	"github.com/rivo/tview"
 )
 
 const asciiTitle = "[lightgreen]" +
@@ -61,7 +61,6 @@ func newMainPage(rows int) *MainPage {
 	return mainPage
 }
 
-
 func (ui *UI) UpdateStateInfo(state string) {
 
 	var color string
@@ -97,16 +96,10 @@ func (ui *UI) UpdateInterpreterInfo(rip, acc, initAdr int, runnable bool) {
 
 }
 
-
-func (ui *UI) ToggleHeapView() {
-	if ui.MainPage.IsHeapVisible {
-		ui.MainPage.RootGrid.RemoveItem(ui.MainPage.HeapTable)
-		ui.MainPage.IsHeapVisible = false
-	} else {
-		ui.MainPage.RootGrid.AddItem(ui.MainPage.HeapTable, 0, 2, 1, 1, 0, 0, false)
-		ui.MainPage.IsHeapVisible = true
-	}
+func (mp *MainPage) GetTable() *tview.Table {
+	return mp.Table.GetTable()
 }
+
 
 
 func (mp *MainPage) UpdateLayout() {
@@ -130,40 +123,56 @@ func (mp *MainPage) UpdateLayout() {
 	}
 }
 
-
 func (mp *MainPage) UpdateHeap(row int, value string, heapStart, heapEnd int) {
+
 	if row >= heapStart && row <= heapEnd {
+
 		mp.HeapTable.GetCell(row-heapStart, 1).SetText(value)
+
 	}
+
 }
 
-
 func (mp *MainPage) CreateHeapTable(heapStart, heapEnd int) {
+
 	mp.HeapTable = tview.NewTable().
 		SetBorders(true).
 		SetSelectable(false, false)
+
 	mp.HeapTable.SetBorderColor(tcell.ColorRed)
+
 	// Encabezados
+
 	headers := []string{"  Memory Address  ", "  Data  "}
+
 	for col, header := range headers {
+
 		mp.HeapTable.SetCell(0, col, tview.NewTableCell(header).
 			SetTextColor(tview.Styles.SecondaryTextColor).
 			SetAlign(tview.AlignCenter))
+
 	}
 
 	// Rellenar la tabla
+
 	for i := heapStart; i <= heapEnd; i++ {
+
 		mp.HeapTable.SetCell(i-heapStart+1, 0, tview.NewTableCell(fmt.Sprintf("%03X", i)).
 			SetTextColor(tview.Styles.PrimaryTextColor).
 			SetAlign(tview.AlignCenter))
+
 		mp.HeapTable.SetCell(i-heapStart+1, 1, tview.NewTableCell("NOP").
 			SetTextColor(tview.Styles.PrimaryTextColor).
 			SetAlign(tview.AlignCenter))
+
 	}
+
 }
 
 func (ui *UI) CreateHeapView(heapStart, heapEnd int) {
+
 	ui.MainPage.HeapTable = tview.NewTable()
+
 	ui.MainPage.HeapTable.SetBorders(true).
 		SetFixed(1, 1).
 		SetSelectable(false, false).
@@ -173,22 +182,31 @@ func (ui *UI) CreateHeapView(heapStart, heapEnd int) {
 		SetTitleAlign(tview.AlignCenter)
 
 	ui.MainPage.HeapTable.SetBordersColor(tcell.ColorRed)
+
 	// Configurar encabezados
+
 	headers := []string{" Memory Address ", " Data "}
+
 	for col, header := range headers {
+
 		ui.MainPage.HeapTable.SetCell(0, col, tview.NewTableCell(header).
 			SetTextColor(tview.Styles.SecondaryTextColor).
 			SetAlign(tview.AlignCenter))
+
 	}
 
 	// Rellenar la tabla con datos iniciales (vacíos)
+
 	for i := heapStart; i <= heapEnd; i++ {
+
 		ui.MainPage.HeapTable.SetCell(i-heapStart+1, 0, tview.NewTableCell(fmt.Sprintf("%03X", i)).
 			SetTextColor(tview.Styles.PrimaryTextColor).
 			SetAlign(tview.AlignCenter))
+
 		ui.MainPage.HeapTable.SetCell(i-heapStart+1, 1, tview.NewTableCell("0000").
 			SetTextColor(tview.Styles.PrimaryTextColor).
 			SetAlign(tview.AlignCenter))
+
 	}
 
 }

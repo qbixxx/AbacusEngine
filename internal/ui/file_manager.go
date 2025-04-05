@@ -1,27 +1,26 @@
-// internal/ui/filemanager.go
 package ui
 
 import (
-	"github.com/rivo/tview"
-	"abacus_engine/internal/fsutil"
-	"abacus_engine/internal/csvloader"
+	"abacus_engine/internal/filemanager"
 	"github.com/gdamore/tcell/v2"
-
+	"github.com/rivo/tview"
 )
 
 // NewFileManagerPage crea y retorna la vista del file manager con lógica integrada
-func NewFileManagerPage(table *tview.Table, switchToMain func(), showModal func(string)) tview.Primitive {
+func NewFileManagerPage(adapter *MemoryTableAdapter, switchToMain func(), showModal func(string)) tview.Primitive {
 	onSelect := func(path string) {
-		err := csvloader.LoadCSVToTable(path, table)
+		fm := filemanager.NewFileManager(path)
+		program, err := fm.LoadProgram()
 		if err != nil {
 			showModal("Error al cargar CSV:\n" + err.Error())
-		} else {
-			switchToMain()
+			return
 		}
+		adapter.LoadProgram(program)
+		switchToMain()
 	}
 
-	root := fsutil.BuildCSVTree("/", onSelect)
-	root.SetExpanded(true)
+	fm := &filemanager.FileManager{}
+	root := fm.BuildCSVTree("/", onSelect)
 	tree := tview.NewTreeView().SetRoot(root).SetCurrentNode(root)
 	tree.SetBorder(true).SetTitle(" File Manager (CSV) ")
 

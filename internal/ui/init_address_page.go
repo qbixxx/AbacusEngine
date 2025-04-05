@@ -33,11 +33,8 @@ func newInputField(ui *UI) *tview.InputField {
 	inputField.SetFieldBackgroundColor(tcell.ColorLightGreen).SetFieldTextColor(tcell.ColorBlack)
 	inputField.Box.SetBorder(true)
 
-
-
 	return inputField
 }
-
 
 func (ui *UI) ShowInputField() {
 	ui.PageHolder.ShowPage("input")
