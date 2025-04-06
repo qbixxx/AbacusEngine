@@ -5,6 +5,7 @@ package memory
 
 
 import (
+	"abacus_engine/internal/styles"
 	"github.com/rivo/tview"
 	"github.com/gdamore/tcell/v2"
 	"fmt"
@@ -125,8 +126,8 @@ func (m *MemoryTable) handleInput(event *tcell.EventKey) *tcell.EventKey {
 				cell.SetText(cell.Text + string(event.Rune()))
 			}
 
-			m.updateCellColor(cell)
-
+			newCell := styles.MakeCell(cell.Text)
+			m.table.SetCell(row, column, newCell)
 		} else if column == 2 {
 			cell.SetText(cell.Text + string(event.Rune()))
 
@@ -201,13 +202,7 @@ func (m *MemoryTable) GetInstruction(row int) string {
 	}
 	return cell.Text
 }
-func (m *MemoryTable) ResetTable() {
-	for row := 1; row <= m.rows; row++ {
-		m.table.GetCell(row, 1).SetText("NOP")
-		m.table.GetCell(row, 2).SetText("")
-		m.updateCellColor(m.table.GetCell(row, 1))
-	}
-}
+
 
 func (m *MemoryTable) WriteCell(row int, accumulator int) {
 	cell := m.table.GetCell(row, 1) // +1 porque la fila 0 es para encabezados

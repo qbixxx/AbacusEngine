@@ -88,8 +88,6 @@ func (ac *AppController) HandleKeyEvent(event *tcell.EventKey) *tcell.EventKey {
             return nil
         }
 	}
-
-
 	return event
 }
 

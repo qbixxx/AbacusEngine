@@ -8,7 +8,8 @@ import (
     "os"
     "path/filepath"
     "strings"
-
+	"strconv"
+	"unicode"
     "github.com/rivo/tview"
 )
 
@@ -22,44 +23,78 @@ func NewFileManager(path string) *FileManager {
 
 // LoadProgram carga el archivo CSV como un programa lógico.
 func (fm *FileManager) LoadProgram() (core.Program, error) {
-    file, err := os.Open(fm.Path)
-    if err != nil {
-        return nil, fmt.Errorf("error abriendo archivo: %w", err)
-    }
-    defer file.Close()
+	file, err := os.Open(fm.Path)
+	if err != nil {
+		return nil, fmt.Errorf("error abriendo archivo: %w", err)
+	}
+	defer file.Close()
 
-    r := csv.NewReader(file)
-    r.Comma = ';'
-    r.FieldsPerRecord = -1
-    r.LazyQuotes = true
+	r := csv.NewReader(file)
+	r.Comma = ';'
+	r.FieldsPerRecord = -1
+	r.LazyQuotes = true
 
-    rows, err := r.ReadAll()
-    if err != nil {
-        return nil, fmt.Errorf("error leyendo CSV: %w", err)
-    }
+	rows, err := r.ReadAll()
+	if err != nil {
+		return nil, fmt.Errorf("error leyendo CSV: %w", err)
+	}
 
-    var program core.Program
-    for _, row := range rows {
-        if len(row) < 2 {
-            continue
-        }
+	var program core.Program
+	var prevAddr int = -1
 
-        addr := strings.TrimSpace(row[0])
-        data := strings.TrimSpace(row[1])
-        comment := ""
-        if len(row) > 2 {
-            comment = strings.TrimSpace(row[2])
-        }
+	for i, row := range rows {
+		if len(row) < 1 || strings.TrimSpace(row[0]) == "" {
+			continue // ignorar filas vacías
+		}
 
-        program = append(program, core.MemoryCell{
-            Address: addr,
-            Data:    data,
-            Comment: comment,
-        })
-    }
+		addrStr := strings.ToUpper(strings.TrimSpace(row[0]))
+		if len(addrStr) != 3 || !isHex(addrStr) {
+			return nil, fmt.Errorf("dirección inválida en línea %d: %s", i+1, addrStr)
+		}
 
-    return program, nil
+		addrVal, err := strconv.ParseInt(addrStr, 16, 64)
+		if err != nil || addrVal < 0x000 || addrVal > 0xFFF {
+			return nil, fmt.Errorf("dirección fuera de rango (000–FFF) en línea %d: %s", i+1, addrStr)
+		}
+
+		if prevAddr != -1 && addrVal != int64(prevAddr+1) {
+			return nil, fmt.Errorf("direcciones no contiguas en línea %d: %s (esperado: %03X)", i+1, addrStr, prevAddr+1)
+		}
+		prevAddr = int(addrVal)
+
+		var data string
+		var comment string
+
+		if len(row) > 1 {
+			data = strings.ToUpper(strings.TrimSpace(row[1]))
+			if data != "" && (!isHex(data) || len(data) != 4) {
+				return nil, fmt.Errorf("dato inválido en línea %d: %s", i+1, data)
+			}
+		}
+		if len(row) > 2 {
+			comment = strings.TrimSpace(row[2])
+		}
+
+        		// 🛠 Si no hay dato, se asigna NOP
+		if data == "" {
+			data = "NOP"
+		}
+
+		cell := core.MemoryCell{
+			Address: addrStr,
+			Data:    data,
+			Comment: comment,
+		}
+		program = append(program, cell)
+	}
+
+	if len(program) == 0 {
+		return nil, fmt.Errorf("el archivo no contiene celdas válidas")
+	}
+
+	return program, nil
 }
+
 
 // SaveProgram guarda el programa lógico en un archivo CSV.
 func (fm *FileManager) SaveProgram(program core.Program) error {
@@ -119,4 +154,13 @@ func addCSVChildren(node *tview.TreeNode, path string, onSelect func(string)) {
             node.AddChild(fileNode)
         }
     }
+}
+
+func isHex(s string) bool {
+	for _, r := range s {
+		if !unicode.IsDigit(r) && !(r >= 'A' && r <= 'F') && !(r >= 'a' && r <= 'f') {
+			return false
+		}
+	}
+	return true
 }

@@ -1,25 +1,21 @@
-package ui
+package styles
 
 import (
-	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
+	"github.com/gdamore/tcell/v2"
 )
 
-// MakeCell crea una celda con formato personalizado según el texto
 func MakeCell(text string) *tview.TableCell {
 	cell := tview.NewTableCell(text).
 		SetAlign(tview.AlignCenter).
 		SetSelectable(true)
 
-	// Estilos por columna (por heurística)
-	if len(text) == 3 && isHex(text) {
-		// dirección de memoria
+	if len(text) == 3 && IsHex(text) {
 		cell.SetAlign(tview.AlignCenter).
 			SetTextColor(tcell.ColorWhite).
 			SetSelectable(false).
 			SetExpansion(0)
-	} else if len(text) == 4 && isHex(text) {
-		// instrucción / dato
+	} else if len(text) == 4 && IsHex(text) {
 		switch text[0] {
 		case '0':
 			cell.SetTextColor(tcell.ColorYellow)
@@ -44,13 +40,12 @@ func MakeCell(text string) *tview.TableCell {
 		}
 		cell.SetMaxWidth(4).SetExpansion(0)
 	} else {
-		// comentario o celda vacía
 		cell.SetTextColor(tview.Styles.PrimaryTextColor).
 			SetAlign(tview.AlignLeft).
 			SetExpansion(18)
 	}
 
-	if text == "NOP"{
+	if text == "NOP" {
 		cell.SetTextColor(tcell.ColorGreen)
 		cell.SetMaxWidth(4).SetExpansion(0)
 		cell.SetAlign(tview.AlignCenter)
@@ -59,7 +54,7 @@ func MakeCell(text string) *tview.TableCell {
 	return cell
 }
 
-func isHex(s string) bool {
+func IsHex(s string) bool {
 	for _, c := range s {
 		if !(c >= '0' && c <= '9') && !(c >= 'A' && c <= 'F') && !(c >= 'a' && c <= 'f') {
 			return false

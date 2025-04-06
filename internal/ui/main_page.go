@@ -40,7 +40,7 @@ func newMainPage(rows int) *MainPage {
 		Title:           tview.NewTextView().SetDynamicColors(true).SetTextAlign(tview.AlignCenter).SetText(asciiTitle),
 		InfoState:       tview.NewTextView().SetDynamicColors(true).SetTextAlign(tview.AlignCenter),
 		InfoInterpreter: tview.NewTextView().SetDynamicColors(true).SetTextAlign(tview.AlignCenter),
-		Footer:          tview.NewTextView().SetDynamicColors(true).SetTextAlign(tview.AlignCenter).SetText("[black:green]^E[white:black] Edit	[black:green]^D[white:black] Debug	[black:green]^R[white:black] Run	[black:green]^I[white:black] Set Init Address	[black:green]^K[white:black] Reset	[black:green]^H[white:black] Show Heap"),
+		Footer:          tview.NewTextView().SetDynamicColors(true).SetTextAlign(tview.AlignCenter).SetText("[black:green]^E[white:black] Edit	[black:green]^D[white:black] Debug	[black:green]^R[white:black] Run	[black:green]^I[white:black] Set Init Address	[black:green]^K[white:black] Reset	[black:green]^H[white:black] Show Heap	[black:green]^O[white:black] Open File"),
 	}
 
 	// Configurar MenuGrid

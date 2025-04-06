@@ -127,7 +127,7 @@ func (i *Interpreter) Step() {
 		i.instructionPointer++
 	}
 
-	//i.memoryTable.ScrollToCurrentRow(i.instructionPointer)
+	i.memoryTable.ScrollToCurrentRow(i.instructionPointer)
 }
 
 func (i *Interpreter) SetForDebug() {
@@ -151,7 +151,7 @@ func (i *Interpreter) Reset() {
 	i.instructionPointer = -1
 	i.accumulator = 0
 	i.initAddress = -1
-	i.memoryTable.ResetTable()
+	//i.memoryTable.ResetTable()
 }
 
 // GetState devuelve el estado actual del intérprete.
